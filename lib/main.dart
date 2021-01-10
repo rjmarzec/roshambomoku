@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_grid_button/flutter_grid_button.dart';
 import 'dart:math' as math;
@@ -88,8 +89,17 @@ class _MyHomePageState extends State<MyHomePage> {
       child: Icon(
         iconImage,
         color: iconColor,
+        size: 36.0,
       ),
     );
+  }
+
+  void reset() {
+    print("reset");
+  }
+
+  void displayHelp() {
+    print("help");
   }
 
   @override
@@ -98,13 +108,60 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: GridButton(
-        onPressed: (dynamic val) {
-          setState(() {
-            _updateTile(val);
-          });
-        },
-        items: _buildGrid(),
+      body: Stack(
+        children: <Widget>[
+          Column(
+            children: <Widget>[
+              Expanded(
+                flex: 1,
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      flex: 2,
+                      child: Center(child: Text("blue next")),
+                    ),
+                    Expanded(
+                      flex: 1,
+                      child: FloatingActionButton(
+                        onPressed: () => reset(),
+                        child: Icon(Icons.refresh),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                flex: 5,
+                child: GridButton(
+                  onPressed: (dynamic val) {
+                    setState(() {
+                      _updateTile(val);
+                    });
+                  },
+                  items: _buildGrid(),
+                ),
+              ),
+              Expanded(
+                flex: 1,
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      flex: 1,
+                      child: FloatingActionButton(
+                        onPressed: () => reset(),
+                        child: Icon(Icons.help),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 2,
+                      child: Center(child: Text("red next")),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
