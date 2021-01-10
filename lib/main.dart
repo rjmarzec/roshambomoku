@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_grid_button/flutter_grid_button.dart';
+import 'dart:math' as math;
 
 void main() {
   runApp(MyApp());
@@ -57,44 +58,38 @@ class _MyHomePageState extends State<MyHomePage> {
     _buttonStates[val] = 1;
   }
 
-  Icon _getIcon(int iconNumber) {
-    switch (iconNumber) {
-      case 1:
-        return Icon(
-          Icons.description,
-          color: Colors.red,
-        );
-      case 2:
-        return Icon(
-          Icons.cloud,
-          color: Colors.red,
-        );
-      case 3:
-        return Icon(
-          Icons.content_cut,
-          color: Colors.red,
-        );
-      case -1:
-        return Icon(
-          Icons.description,
-          color: Colors.blue,
-        );
-      case -2:
-        return Icon(
-          Icons.cloud,
-          color: Colors.blue,
-        );
-      case -3:
-        return Icon(
-          Icons.content_cut,
-          color: Colors.blue,
-        );
-      default:
-        return Icon(
-          Icons.all_out,
-          color: Colors.white,
-        );
+  Transform _getIcon(int iconNumber) {
+    int iconAngle;
+    Color iconColor;
+    IconData iconImage;
+
+    List<IconData> icons = [
+      Icons.cloud,
+      Icons.description,
+      Icons.content_cut,
+    ];
+
+    if (iconNumber > 0) {
+      iconAngle = 90;
+      iconColor = Colors.blue;
+      iconImage = icons[iconNumber];
+    } else if (iconNumber < 0) {
+      iconAngle = -90;
+      iconColor = Colors.red;
+      iconImage = icons[iconNumber * -1];
+    } else {
+      iconAngle = 0;
+      iconColor = Colors.white;
+      iconImage = null;
     }
+
+    return Transform.rotate(
+      angle: iconAngle * math.pi / 180,
+      child: Icon(
+        iconImage,
+        color: iconColor,
+      ),
+    );
   }
 
   @override
