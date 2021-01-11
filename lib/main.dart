@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_grid_button/flutter_grid_button.dart';
 import 'package:flip_card/flip_card.dart';
+import 'package:animated_rotation/animated_rotation.dart';
 import 'dart:math' as math;
 
 void main() {
@@ -64,8 +65,11 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget _backRedPieceCard;
   int _nextRedPiece;
 
+  // keep track of the angle the arrow in the background should point
+  int _arrowRotationAngle;
+
   _MyHomePageState() {
-    //
+    // probably not the best way to initialize variables, but clean enough
     _doReset();
   }
 
@@ -172,6 +176,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
         // update the turn number since one was successfully done
         _turnNumber++;
+
+        // rotate the pointer to point to the next player's card
+        _arrowRotationAngle += 180;
       }
     } else {
       // if there is no piece there, we can place it without issue. otherwise,
@@ -206,6 +213,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
         // update the turn number since one was successfully done
         _turnNumber++;
+
+        // rotate the pointer to point to the next player's card
+        _arrowRotationAngle += 180;
       }
     }
   }
@@ -318,7 +328,9 @@ class _MyHomePageState extends State<MyHomePage> {
           FlatButton(
             child: Text("Yes"),
             onPressed: () {
-              _doReset();
+              setState(() {
+                _doReset();
+              });
               Navigator.pop(context);
             },
           )
@@ -328,30 +340,31 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _doReset() {
-    setState(() {
-      // reset scores
-      _turnNumber = 0;
-      _blueScore = 0;
-      _redScore = 0;
+    // reset scores
+    _turnNumber = 0;
+    _blueScore = 0;
+    _redScore = 0;
 
-      // clear the board
-      _buttonStates = new List<int>(36);
-      for (int i = 0; i < 36; i++) {
-        _buttonStates[i] = 0;
-      }
+    // clear the board
+    _buttonStates = new List<int>(36);
+    for (int i = 0; i < 36; i++) {
+      _buttonStates[i] = 0;
+    }
 
-      // pick a random piece for red and blue to start off with
-      _generateNextPiece(true);
-      _generateNextPiece(false);
+    // pick a random piece for red and blue to start off with
+    _generateNextPiece(true);
+    _generateNextPiece(false);
 
-      // setup the next piece cards for red and blue. the back card we create
-      //  here should never to be able to be seen, but we initialize it anyways
-      //  to avoid any funkiness
-      _frontBluePieceCard = _buildCard(_nextBluePiece, true);
-      _backBluePieceCard = _buildCard(_nextBluePiece, true);
-      _frontRedPieceCard = _buildCard(_nextRedPiece, false);
-      _backRedPieceCard = _buildCard(_nextRedPiece, false);
-    });
+    // setup the next piece cards for red and blue. the back card we create
+    //  here should never to be able to be seen, but we initialize it anyways
+    //  to avoid any funkiness
+    _frontBluePieceCard = _buildCard(_nextBluePiece, true);
+    _backBluePieceCard = _buildCard(_nextBluePiece, true);
+    _frontRedPieceCard = _buildCard(_nextRedPiece, false);
+    _backRedPieceCard = _buildCard(_nextRedPiece, false);
+
+    // reset the rotation of arrow in the background
+    _arrowRotationAngle = 0;
   }
 
   @override
@@ -370,14 +383,21 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget _buildBackground() {
-    return Container();
-    /*
     return Center(
-        child: MaterialButton(
-      onPressed: () {},
-      color: Colors.blue,
-    ));
-    */
+      child: Transform.rotate(
+        angle: -math.pi / 12,
+        child: AnimatedRotation(
+          angle: _arrowRotationAngle,
+          child: Container(
+            child: Icon(
+              Icons.arrow_upward,
+              size: 256,
+              color: Colors.grey,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildPlayArea() {
