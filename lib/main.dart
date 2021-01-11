@@ -50,67 +50,46 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // variables related to which blue piece is coming up next and the
   //  cards that display the information to the players
-  GlobalKey<FlipCardState> _bluePieceController;
+  final GlobalKey<FlipCardState> _bluePieceController =
+      GlobalKey<FlipCardState>();
   Widget _frontBluePieceCard;
   Widget _backBluePieceCard;
   int _nextBluePiece;
 
   // variables related to which red piece is coming up next and the
   //  cards that display the information to the players
-  GlobalKey<FlipCardState> _redPieceController;
+  final GlobalKey<FlipCardState> _redPieceController =
+      GlobalKey<FlipCardState>();
   Widget _frontRedPieceCard;
   Widget _backRedPieceCard;
   int _nextRedPiece;
 
   _MyHomePageState() {
-    _bluePieceController = GlobalKey<FlipCardState>();
-    _redPieceController = GlobalKey<FlipCardState>();
-
-    // this is a bit of a poor way to reinitialize variables, but this way
-    //  allows me to reset the entire game using setState(), which is nice
-    _resetVariables();
+    //
+    _doReset();
   }
 
-  _resetVariables() {
-    // reset scores
-    _turnNumber = 0;
-    _blueScore = 0;
-    _redScore = 0;
-
-    // clear the board
-    _buttonStates = new List<int>(36);
-    for (int i = 0; i < 36; i++) {
-      _buttonStates[i] = 0;
-    }
-
-    // pick a random piece for red and blue to start off with
-    _pickNextPiece(true);
-    _pickNextPiece(false);
-
-    // setup the next piece cards for red and blue. the back card we create
-    //  here should never to be able to be seen, but we initialize it anyways
-    //  to avoid any funkiness
-    _frontBluePieceCard = _buildCard(_nextBluePiece, true);
-    _backBluePieceCard = _buildCard(_nextBluePiece, true);
-    _frontRedPieceCard = _buildCard(_nextRedPiece, false);
-    _backRedPieceCard = _buildCard(_nextRedPiece, false);
-  }
-
-  Card _buildCard(int iconNumber, bool isBlue) {
+  Widget _buildCard(int iconNumber, bool isBlue) {
     if (isBlue) {
       return Card(
-        child: Icon(_pieceIcons[iconNumber]),
+        child: Icon(
+          _pieceIcons[iconNumber],
+          size: 36.0,
+        ),
         color: Colors.lightBlueAccent[100],
       );
     } else {
       return Card(
-        child: Icon(_pieceIcons[iconNumber]),
+        child: Icon(
+          _pieceIcons[iconNumber],
+          size: 36.0,
+        ),
         color: Colors.redAccent[100],
       );
     }
   }
 
-  Transform _getIcon(int iconNumber) {
+  Transform _buildGridIcon(int iconNumber) {
     int iconAngle;
     Color iconColor;
     IconData iconImage;
@@ -148,7 +127,7 @@ class _MyHomePageState extends State<MyHomePage> {
         gridRow.add(GridButtonItem(
           value: index,
           child: Center(
-            child: _getIcon(_buttonStates[index]),
+            child: _buildGridIcon(_buttonStates[index]),
           ),
         ));
       }
@@ -157,7 +136,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return grid;
   }
 
-  void _updateTile(int val) {
+  void _placePiece(int val) {
     int relativeTurn = _turnNumber % 4;
     // if the turn is a multiple of 2, it is the blue player's turn
     if (relativeTurn % 2 == 0) {
@@ -175,7 +154,7 @@ class _MyHomePageState extends State<MyHomePage> {
         });
 
         // randomize the next piece that will be selected
-        _pickNextPiece(true);
+        _generateNextPiece(true);
 
         // we need to handle flipping the blue card different based on whether
         //  the front or back is currently shown, and we can which we are on
@@ -209,7 +188,7 @@ class _MyHomePageState extends State<MyHomePage> {
         });
 
         // randomize the next piece that will be selected
-        _pickNextPiece(false);
+        _generateNextPiece(false);
 
         // we need to handle flipping the blue card different based on whether
         //  the front or back is currently shown, and we can which we are on
@@ -231,7 +210,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  void _pickNextPiece(bool isBlue) {
+  void _generateNextPiece(bool isBlue) {
     if (isBlue) {
       _nextBluePiece = _randomGen.nextInt(3) + 1;
     } else {
@@ -242,13 +221,137 @@ class _MyHomePageState extends State<MyHomePage> {
   void _updateScore() {}
 
   void _displayHelp() {
-    print("help");
-    _redPieceController.currentState.toggleCard();
-    //_bluePieceController.forward();
+    // bring up a menu explaining how the game is played
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text("How to play"),
+        content: SingleChildScrollView(
+          child: ListBody(
+            children: <Widget>[
+              Text(
+                "Welcome to Roshambomok, a game where Tic-Tak-Toe meets " +
+                    "five-in-a-row.\n\nPlayers take turn placing pieces " +
+                    "on empty spots on the board, gaining points each turn" +
+                    "based on how long lines of their pieces are.\n",
+                textAlign: TextAlign.center,
+              ),
+              Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Icon(
+                      Icons.album,
+                      color: Colors.red,
+                    ),
+                    Icon(Icons.cloud),
+                    Icon(Icons.description),
+                    Icon(Icons.content_cut),
+                    Icon(
+                      Icons.album,
+                      color: Colors.blue,
+                    ),
+                  ],
+                ),
+              ),
+              Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Icon(Icons.arrow_downward),
+                  ],
+                ),
+              ),
+              Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Icon(
+                      Icons.album,
+                      color: Colors.blue,
+                    ),
+                    Icon(Icons.content_cut),
+                    Icon(Icons.cloud),
+                    Icon(Icons.description),
+                    Icon(
+                      Icons.album,
+                      color: Colors.red,
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                "\nHowever, if your piece beats their's in rock-paper-" +
+                    "scissors, you can replace their piece as well.\n\nCan " +
+                    "you outsmart your opponent to reach 2000 points first?" +
+                    "\n\nGood luck!",
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          FlatButton(
+            child: Text("Ok"),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          )
+        ],
+      ),
+    );
   }
 
   void _displayReset() {
-    // this should bring up a box to ask if the players want to reset
+    // ask the player if they want to reset the game and reset if necessary
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text("Restart the game?"),
+        actions: <Widget>[
+          FlatButton(
+            child: Text("No"),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
+          FlatButton(
+            child: Text("Yes"),
+            onPressed: () {
+              _doReset();
+              Navigator.pop(context);
+            },
+          )
+        ],
+      ),
+    );
+  }
+
+  void _doReset() {
+    setState(() {
+      // reset scores
+      _turnNumber = 0;
+      _blueScore = 0;
+      _redScore = 0;
+
+      // clear the board
+      _buttonStates = new List<int>(36);
+      for (int i = 0; i < 36; i++) {
+        _buttonStates[i] = 0;
+      }
+
+      // pick a random piece for red and blue to start off with
+      _generateNextPiece(true);
+      _generateNextPiece(false);
+
+      // setup the next piece cards for red and blue. the back card we create
+      //  here should never to be able to be seen, but we initialize it anyways
+      //  to avoid any funkiness
+      _frontBluePieceCard = _buildCard(_nextBluePiece, true);
+      _backBluePieceCard = _buildCard(_nextBluePiece, true);
+      _frontRedPieceCard = _buildCard(_nextRedPiece, false);
+      _backRedPieceCard = _buildCard(_nextRedPiece, false);
+    });
   }
 
   @override
@@ -259,84 +362,96 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Stack(
         children: <Widget>[
-          Column(
+          _buildBackground(),
+          _buildPlayArea(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBackground() {
+    return Container();
+    /*
+    return Center(
+        child: MaterialButton(
+      onPressed: () {},
+      color: Colors.blue,
+    ));
+    */
+  }
+
+  Widget _buildPlayArea() {
+    return Column(
+      children: <Widget>[
+        Expanded(
+          flex: 1,
+          child: Row(
             children: <Widget>[
               Expanded(
-                flex: 1,
-                child: Row(
-                  children: <Widget>[
-                    Expanded(
-                      flex: 2,
-                      child: Transform.rotate(
-                        angle: math.pi,
-                        child: FlipCard(
-                          flipOnTouch: false,
-                          key: _bluePieceController,
-                          direction: FlipDirection.VERTICAL,
-                          front: _frontBluePieceCard,
-                          back: _backBluePieceCard,
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 1,
-                      child: FloatingActionButton(
-                        onPressed: () {
-                          setState(() {
-                            _resetVariables();
-                          });
-                        },
-                        child: Icon(
-                          Icons.refresh,
-                          size: 36.0,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                flex: 5,
-                child: GridButton(
-                  onPressed: (dynamic val) {
-                    setState(() {
-                      _updateTile(val);
-                    });
-                  },
-                  items: _buildGrid(),
+                flex: 2,
+                child: Transform.rotate(
+                  angle: math.pi,
+                  child: FlipCard(
+                    flipOnTouch: false,
+                    key: _bluePieceController,
+                    direction: FlipDirection.VERTICAL,
+                    front: _frontBluePieceCard,
+                    back: _backBluePieceCard,
+                  ),
                 ),
               ),
               Expanded(
                 flex: 1,
-                child: Row(
-                  children: <Widget>[
-                    Expanded(
-                      flex: 1,
-                      child: FloatingActionButton(
-                        onPressed: () => _displayHelp(),
-                        child: Icon(
-                          Icons.help,
-                          size: 36.0,
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 2,
-                      child: FlipCard(
-                        flipOnTouch: false,
-                        key: _redPieceController,
-                        direction: FlipDirection.VERTICAL,
-                        front: _frontRedPieceCard,
-                        back: _backRedPieceCard,
-                      ),
-                    ),
-                  ],
+                child: FloatingActionButton(
+                  onPressed: () => _displayReset(),
+                  child: Icon(
+                    Icons.refresh,
+                    size: 36.0,
+                  ),
                 ),
               ),
             ],
           ),
-        ],
-      ),
+        ),
+        Expanded(
+          flex: 5,
+          child: GridButton(
+            onPressed: (dynamic val) {
+              setState(() {
+                _placePiece(val);
+              });
+            },
+            items: _buildGrid(),
+          ),
+        ),
+        Expanded(
+          flex: 1,
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                flex: 1,
+                child: FloatingActionButton(
+                  onPressed: () => _displayHelp(),
+                  child: Icon(
+                    Icons.help,
+                    size: 36.0,
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: 2,
+                child: FlipCard(
+                  flipOnTouch: false,
+                  key: _redPieceController,
+                  direction: FlipDirection.VERTICAL,
+                  front: _frontRedPieceCard,
+                  back: _backRedPieceCard,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
