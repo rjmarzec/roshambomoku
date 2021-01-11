@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_grid_button/flutter_grid_button.dart';
+import 'package:tcard/tcard.dart';
 import 'dart:math' as math;
 
 void main() {
@@ -31,12 +32,39 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   List<int> _buttonStates;
+  List<Widget> _cards;
+
+  TCardController _bluePieceController;
+  List<Widget> _queuedBluePieceCards;
+  Widget _currentBluePieceCard;
+  Widget _nextBluePieceCard;
+
+  TCardController _redPieceController;
+  List<Widget> _queuedRedPieceCards;
+  Widget _currentRedPieceCard;
+  Widget _nextRedPieceCard;
 
   _MyHomePageState() {
     _buttonStates = new List<int>(49);
     for (int i = 0; i < 49; i++) {
       _buttonStates[i] = 0;
     }
+
+    _bluePieceController = TCardController();
+    _currentBluePieceCard = Card(child: Icon(Icons.star));
+    _nextBluePieceCard = Card(child: Icon(Icons.build));
+    _queuedBluePieceCards = [
+      _currentBluePieceCard,
+      _nextBluePieceCard,
+    ];
+
+    _redPieceController = TCardController();
+    _currentRedPieceCard = Card(child: Icon(Icons.star));
+    _nextRedPieceCard = Card(child: Icon(Icons.build));
+    _queuedRedPieceCards = [
+      _currentRedPieceCard,
+      _nextRedPieceCard,
+    ];
   }
 
   List<List<GridButtonItem>> _buildGrid() {
@@ -57,6 +85,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _updateTile(int val) {
     _buttonStates[val] = 1;
+    _bluePieceController.forward();
   }
 
   Transform _getIcon(int iconNumber) {
@@ -96,10 +125,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void reset() {
     print("reset");
+    _bluePieceController.reset();
   }
 
   void displayHelp() {
     print("help");
+    _bluePieceController.forward();
   }
 
   @override
@@ -118,7 +149,15 @@ class _MyHomePageState extends State<MyHomePage> {
                   children: <Widget>[
                     Expanded(
                       flex: 2,
-                      child: Center(child: Text("blue next")),
+                      child: Transform.rotate(
+                        angle: math.pi,
+                        child: IgnorePointer(
+                          child: TCard(
+                            cards: _queuedBluePieceCards,
+                            controller: _bluePieceController,
+                          ),
+                        ),
+                      ),
                     ),
                     Expanded(
                       flex: 1,
@@ -154,7 +193,12 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                     Expanded(
                       flex: 2,
-                      child: Center(child: Text("red next")),
+                      child: IgnorePointer(
+                        child: TCard(
+                          cards: _queuedRedPieceCards,
+                          controller: _redPieceController,
+                        ),
+                      ),
                     ),
                   ],
                 ),

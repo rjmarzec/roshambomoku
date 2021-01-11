@@ -23,7 +23,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_grid_button:
+  flutter_grid_button: ^1.1.8
+  tcard: ^1.2.2
 
 
   # The following adds the Cupertino Icons font to your application.

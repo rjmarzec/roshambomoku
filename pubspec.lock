@@ -156,6 +156,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.5"
+  tcard:
+    dependency: "direct main"
+    description:
+      name: tcard
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.2.2"
   term_glyph:
     dependency: transitive
     description:
