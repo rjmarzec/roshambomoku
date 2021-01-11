@@ -5,9 +5,7 @@ import 'package:flip_card/flip_card.dart';
 import 'package:animated_rotation/animated_rotation.dart';
 import 'dart:math' as math;
 
-void main() {
-  runApp(MyApp());
-}
+void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   @override
@@ -40,7 +38,8 @@ class _MyHomePageState extends State<MyHomePage> {
   ];
   final math.Random _randomGen = math.Random();
 
-  // keep track of what piece (if any) is placed on which tile
+  // keep track of what piece (if any) is placed on which tile in terms of
+  //  which piece is placed on which tile
   List<int> _buttonStates;
 
   // keep track of scores and who's turn it is currently
@@ -74,23 +73,56 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget _buildCard(int iconNumber, bool isBlue) {
+    List<Color> cardColors;
+    List<double> cardStops;
+    double cardAngle;
+
     if (isBlue) {
-      return Card(
-        child: Icon(
-          _pieceIcons[iconNumber],
-          size: 36.0,
-        ),
-        color: Colors.lightBlueAccent[100],
-      );
+      cardColors = [
+        Colors.blue[500],
+        Colors.blue[500],
+        Colors.blueAccent[100],
+        Colors.blueAccent[100],
+      ];
+      cardStops = [0, _blueScore / maxScore, _blueScore / maxScore, 1];
+      cardAngle = math.pi / 2;
     } else {
-      return Card(
-        child: Icon(
-          _pieceIcons[iconNumber],
-          size: 36.0,
-        ),
-        color: Colors.redAccent[100],
-      );
+      cardColors = [
+        Colors.redAccent[100],
+        Colors.redAccent[100],
+        Colors.red[500],
+        Colors.red[500],
+      ];
+      cardStops = [0, 1 - _redScore / maxScore, 1 - _redScore / maxScore, 1];
+      cardAngle = -math.pi / 2;
     }
+
+    return Card(
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4),
+          gradient: LinearGradient(
+            stops: cardStops,
+            begin: FractionalOffset.bottomLeft,
+            end: FractionalOffset.topRight,
+            colors: cardColors,
+          ),
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(8.0),
+          child: Container(
+            child: Transform.rotate(
+              angle: cardAngle,
+              child: Icon(
+                _pieceIcons[iconNumber],
+                color: Colors.white,
+                size: 64.0,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Transform _buildGridIcon(int iconNumber) {
@@ -154,7 +186,7 @@ class _MyHomePageState extends State<MyHomePage> {
         // place the piece at the location pressed and score the board
         setState(() {
           _buttonStates[val] = _nextBluePiece;
-          _updateScore();
+          _updateScore(true);
         });
 
         // randomize the next piece that will be selected
@@ -191,7 +223,7 @@ class _MyHomePageState extends State<MyHomePage> {
         // place the piece at the location pressed and score the board
         setState(() {
           _buttonStates[val] = _nextRedPiece * -1;
-          _updateScore();
+          _updateScore(false);
         });
 
         // randomize the next piece that will be selected
@@ -228,7 +260,13 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  void _updateScore() {}
+  void _updateScore(bool isBlue) {
+    if (isBlue) {
+      _blueScore += 400;
+    } else {
+      _redScore += 400;
+    }
+  }
 
   void _displayHelp() {
     // bring up a menu explaining how the game is played
@@ -329,6 +367,14 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Text("Yes"),
             onPressed: () {
               setState(() {
+                // flip the cards back to showing the front putting this code
+                //  block into doReset() breaks the app on run
+                if (!_bluePieceController.currentState.isFront) {
+                  _bluePieceController.currentState.toggleCard();
+                }
+                if (!_redPieceController.currentState.isFront) {
+                  _redPieceController.currentState.toggleCard();
+                }
                 _doReset();
               });
               Navigator.pop(context);
@@ -343,6 +389,10 @@ class _MyHomePageState extends State<MyHomePage> {
     // reset scores
     _turnNumber = 0;
     _blueScore = 0;
+    _redScore = 0;
+
+    // TEMPORARY FOR CHECKING WORKING GRADIENTS
+    _blueScore = 200;
     _redScore = 0;
 
     // clear the board
@@ -376,6 +426,7 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Stack(
         children: <Widget>[
           _buildBackground(),
+          _buildScoreText(),
           _buildPlayArea(),
         ],
       ),
@@ -400,6 +451,36 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  Widget _buildScoreText() {
+    return Center(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Expanded(
+            child: Center(
+              child: Transform.rotate(
+                angle: math.pi / 2,
+                child: Text(
+                  _blueScore.toString(),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Center(
+              child: Transform.rotate(
+                angle: -math.pi / 2,
+                child: Text(
+                  _redScore.toString(),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPlayArea() {
     return Column(
       children: <Widget>[
@@ -408,9 +489,13 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Row(
             children: <Widget>[
               Expanded(
-                flex: 2,
+                flex: 1,
+                child: Container(),
+              ),
+              Expanded(
+                flex: 6,
                 child: Transform.rotate(
-                  angle: math.pi,
+                  angle: 0,
                   child: FlipCard(
                     flipOnTouch: false,
                     key: _bluePieceController,
@@ -421,7 +506,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
               Expanded(
-                flex: 1,
+                flex: 3,
                 child: FloatingActionButton(
                   onPressed: () => _displayReset(),
                   child: Icon(
@@ -449,7 +534,7 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Row(
             children: <Widget>[
               Expanded(
-                flex: 1,
+                flex: 3,
                 child: FloatingActionButton(
                   onPressed: () => _displayHelp(),
                   child: Icon(
@@ -459,14 +544,21 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
               Expanded(
-                flex: 2,
-                child: FlipCard(
-                  flipOnTouch: false,
-                  key: _redPieceController,
-                  direction: FlipDirection.VERTICAL,
-                  front: _frontRedPieceCard,
-                  back: _backRedPieceCard,
+                flex: 6,
+                child: Transform.rotate(
+                  angle: 0,
+                  child: FlipCard(
+                    flipOnTouch: false,
+                    key: _redPieceController,
+                    direction: FlipDirection.VERTICAL,
+                    front: _frontRedPieceCard,
+                    back: _backRedPieceCard,
+                  ),
                 ),
+              ),
+              Expanded(
+                flex: 1,
+                child: Container(),
               ),
             ],
           ),
