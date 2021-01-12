@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_grid_button/flutter_grid_button.dart';
 import 'package:flip_card/flip_card.dart';
 import 'package:animated_rotation/animated_rotation.dart';
+import 'package:flutter/services.dart';
 import 'dart:math' as math;
 
 void main() => runApp(MyApp());
@@ -11,11 +12,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Roshambomoku',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Roshambomok'),
+      home: MyHomePage(title: 'Roshambomoku'),
     );
   }
 }
@@ -56,7 +57,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int _redScore;
   int _redScoredLastRound;
   bool _redWon;
-  final int maxScore = 400;
+  final int maxScore = 2000;
 
   // variables related to which blue piece is coming up next and the
   //  cards that display the information to the players
@@ -88,7 +89,7 @@ class _MyHomePageState extends State<MyHomePage> {
     _blueScore = 0;
     _blueWon = false;
     _blueScoredLastRound = 0;
-    _redScore = 30;
+    _redScore = 150;
     _redWon = false;
     _redScoredLastRound = 0;
 
@@ -118,7 +119,6 @@ class _MyHomePageState extends State<MyHomePage> {
     List<Color> cardColors;
     List<double> cardStops;
     int cardIconTurns;
-    int cardScore;
 
     if (isBlue) {
       cardColors = [
@@ -129,7 +129,6 @@ class _MyHomePageState extends State<MyHomePage> {
       ];
       cardStops = [0, _blueScore / maxScore, _blueScore / maxScore, 1];
       cardIconTurns = 1;
-      cardScore = _blueScore;
     } else {
       cardColors = [
         Colors.redAccent[100],
@@ -139,7 +138,6 @@ class _MyHomePageState extends State<MyHomePage> {
       ];
       cardStops = [0, 1 - _redScore / maxScore, 1 - _redScore / maxScore, 1];
       cardIconTurns = -1;
-      cardScore = _redScore;
     }
 
     return Card(
@@ -399,11 +397,11 @@ class _MyHomePageState extends State<MyHomePage> {
     //  for one players, gives them points based on the number and length
     //  of the chains. points go as follows: 5 for 2 chains, 20 for 3 chains,
     //  80 for 4 chains, 240 for 5 chains, and 960 for 6 chains.
-    int totalPointsEarned = chainCount[2] * 2;
-    totalPointsEarned += chainCount[3] * 8;
-    totalPointsEarned += chainCount[4] * 32;
-    totalPointsEarned += chainCount[5] * 96;
-    totalPointsEarned += chainCount[6] * 384;
+    int totalPointsEarned = chainCount[2] * 10;
+    totalPointsEarned += chainCount[3] * 40;
+    totalPointsEarned += chainCount[4] * 160;
+    totalPointsEarned += chainCount[5] * 480;
+    totalPointsEarned += chainCount[6] * 1920;
 
     if (isBlue) {
       _blueScore += totalPointsEarned;
@@ -447,7 +445,7 @@ class _MyHomePageState extends State<MyHomePage> {
           child: ListBody(
             children: <Widget>[
               Text(
-                "Welcome to Roshambomok, a game where Tic-Tak-Toe meets " +
+                "Welcome to Roshambomoku, a game where Tic-Tak-Toe meets " +
                     "five-in-a-row.\n\nPlayers take turn placing pieces " +
                     "on empty spots on the board, gaining points each time " +
                     "based on how long lines of their pieces are.\n",
@@ -557,17 +555,17 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setEnabledSystemUIOverlays([]);
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Stack(
-        children: <Widget>[
-          _buildBackground(),
-          _buildScoreText(),
-          _buildPlayArea(),
-          _buildVictoryScreen(),
-        ],
+      body: SafeArea(
+        child: Stack(
+          children: <Widget>[
+            _buildBackground(),
+            _buildScoreText(),
+            _buildPlayArea(),
+            _buildVictoryScreen(),
+          ],
+        ),
       ),
     );
   }
