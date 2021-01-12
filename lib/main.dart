@@ -30,13 +30,18 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  // stores the icons that represent rock, paper, and scissors
   final List<IconData> _pieceIcons = [
     null,
     Icons.cloud,
     Icons.description,
     Icons.content_cut,
   ];
+
+  // random generator for picking the next piece each player gets
   final math.Random _randomGen = math.Random();
+
+  // length of the grid
   final int _gridLength = 6;
 
   // keep track of what piece (if any) is placed on which tile in terms of
@@ -47,9 +52,11 @@ class _MyHomePageState extends State<MyHomePage> {
   int _turnNumber;
   int _blueScore;
   int _blueScoredLastRound;
+  bool _blueWon;
   int _redScore;
   int _redScoredLastRound;
-  final int maxScore = 2000;
+  bool _redWon;
+  final int maxScore = 400;
 
   // variables related to which blue piece is coming up next and the
   //  cards that display the information to the players
@@ -73,6 +80,38 @@ class _MyHomePageState extends State<MyHomePage> {
   _MyHomePageState() {
     // probably not the best way to initialize variables, but clean enough
     _doReset();
+  }
+
+  void _doReset() {
+    // reset scores
+    _turnNumber = 0;
+    _blueScore = 0;
+    _blueWon = false;
+    _blueScoredLastRound = 0;
+    _redScore = 30;
+    _redWon = false;
+    _redScoredLastRound = 0;
+
+    // clear the board
+    _buttonStates = new List<int>(36);
+    for (int i = 0; i < _gridLength * _gridLength; i++) {
+      _buttonStates[i] = 0;
+    }
+
+    // pick a random piece for red and blue to start off with
+    _generateNextPiece(true);
+    _generateNextPiece(false);
+
+    // setup the next piece cards for red and blue. the back card we create
+    //  here should never to be able to be seen, but we initialize it anyways
+    //  to avoid any funkiness
+    _frontBluePieceCard = _buildCard(_nextBluePiece, true);
+    _backBluePieceCard = _buildCard(_nextBluePiece, true);
+    _frontRedPieceCard = _buildCard(_nextRedPiece, false);
+    _backRedPieceCard = _buildCard(_nextRedPiece, false);
+
+    // reset the rotation of arrow in the background
+    _arrowRotationAngle = 0;
   }
 
   Widget _buildCard(int iconNumber, bool isBlue) {
@@ -133,27 +172,27 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Transform _buildGridIcon(int iconNumber) {
-    int iconAngle;
+  RotatedBox _buildGridIcon(int iconNumber) {
+    int iconRotationTurns;
     Color iconColor;
     IconData iconImage;
 
     if (iconNumber > 0) {
-      iconAngle = 90;
+      iconRotationTurns = 1;
       iconColor = Colors.blue;
       iconImage = _pieceIcons[iconNumber];
     } else if (iconNumber < 0) {
-      iconAngle = -90;
+      iconRotationTurns = -1;
       iconColor = Colors.red;
       iconImage = _pieceIcons[iconNumber * -1];
     } else {
-      iconAngle = 0;
+      iconRotationTurns = 0;
       iconColor = Colors.white;
       iconImage = null;
     }
 
-    return Transform.rotate(
-      angle: iconAngle * math.pi / 180,
+    return RotatedBox(
+      quarterTurns: iconRotationTurns,
       child: Icon(
         iconImage,
         color: iconColor,
@@ -360,18 +399,24 @@ class _MyHomePageState extends State<MyHomePage> {
     //  for one players, gives them points based on the number and length
     //  of the chains. points go as follows: 5 for 2 chains, 20 for 3 chains,
     //  80 for 4 chains, 240 for 5 chains, and 960 for 6 chains.
-    int totalPointsEarned = chainCount[2] * 5;
-    totalPointsEarned += chainCount[3] * 20;
-    totalPointsEarned += chainCount[4] * 80;
-    totalPointsEarned += chainCount[5] * 240;
-    totalPointsEarned += chainCount[6] * 960;
+    int totalPointsEarned = chainCount[2] * 2;
+    totalPointsEarned += chainCount[3] * 8;
+    totalPointsEarned += chainCount[4] * 32;
+    totalPointsEarned += chainCount[5] * 96;
+    totalPointsEarned += chainCount[6] * 384;
 
     if (isBlue) {
       _blueScore += totalPointsEarned;
       _blueScoredLastRound = totalPointsEarned;
+      if (_blueScore >= maxScore) {
+        _blueWon = true;
+      }
     } else {
       _redScore += totalPointsEarned;
       _redScoredLastRound = totalPointsEarned;
+      if (_redScore >= maxScore) {
+        _redWon = true;
+      }
     }
   }
 
@@ -455,8 +500,9 @@ class _MyHomePageState extends State<MyHomePage> {
               Text(
                 "\nHowever, if your piece beats their's in rock-paper-" +
                     "scissors, you can replace their piece as well.\n\nCan " +
-                    "you outsmart your opponent to reach 2000 points first?" +
-                    "\n\nGood luck!",
+                    "you outsmart your opponent to reach " +
+                    maxScore.toString() +
+                    " points first?\n\nGood luck!",
                 textAlign: TextAlign.center,
               ),
             ],
@@ -509,36 +555,6 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  void _doReset() {
-    // reset scores
-    _turnNumber = 0;
-    _blueScore = 0;
-    _blueScoredLastRound = 0;
-    _redScore = 100;
-    _redScoredLastRound = 0;
-
-    // clear the board
-    _buttonStates = new List<int>(36);
-    for (int i = 0; i < _gridLength * _gridLength; i++) {
-      _buttonStates[i] = 0;
-    }
-
-    // pick a random piece for red and blue to start off with
-    _generateNextPiece(true);
-    _generateNextPiece(false);
-
-    // setup the next piece cards for red and blue. the back card we create
-    //  here should never to be able to be seen, but we initialize it anyways
-    //  to avoid any funkiness
-    _frontBluePieceCard = _buildCard(_nextBluePiece, true);
-    _backBluePieceCard = _buildCard(_nextBluePiece, true);
-    _frontRedPieceCard = _buildCard(_nextRedPiece, false);
-    _backRedPieceCard = _buildCard(_nextRedPiece, false);
-
-    // reset the rotation of arrow in the background
-    _arrowRotationAngle = 0;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -550,6 +566,7 @@ class _MyHomePageState extends State<MyHomePage> {
           _buildBackground(),
           _buildScoreText(),
           _buildPlayArea(),
+          _buildVictoryScreen(),
         ],
       ),
     );
@@ -589,15 +606,12 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               Expanded(
                 flex: 6,
-                child: Transform.rotate(
-                  angle: 0,
-                  child: FlipCard(
-                    flipOnTouch: false,
-                    key: _bluePieceController,
-                    direction: FlipDirection.VERTICAL,
-                    front: _frontBluePieceCard,
-                    back: _backBluePieceCard,
-                  ),
+                child: FlipCard(
+                  flipOnTouch: false,
+                  key: _bluePieceController,
+                  direction: FlipDirection.VERTICAL,
+                  front: _frontBluePieceCard,
+                  back: _backBluePieceCard,
                 ),
               ),
               Expanded(
@@ -619,7 +633,7 @@ class _MyHomePageState extends State<MyHomePage> {
           child: GridButton(
             onPressed: (dynamic val) {
               setState(() {
-                _placePiece(val);
+                if (!_blueWon && !_redWon) _placePiece(val);
               });
             },
             items: _buildGrid(),
@@ -642,15 +656,12 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               Expanded(
                 flex: 6,
-                child: Transform.rotate(
-                  angle: 0,
-                  child: FlipCard(
-                    flipOnTouch: false,
-                    key: _redPieceController,
-                    direction: FlipDirection.VERTICAL,
-                    front: _frontRedPieceCard,
-                    back: _backRedPieceCard,
-                  ),
+                child: FlipCard(
+                  flipOnTouch: false,
+                  key: _redPieceController,
+                  direction: FlipDirection.VERTICAL,
+                  front: _frontRedPieceCard,
+                  back: _backRedPieceCard,
                 ),
               ),
               Expanded(
@@ -669,24 +680,30 @@ class _MyHomePageState extends State<MyHomePage> {
       children: <Widget>[
         Expanded(
           child: Center(
-            child: Text(
-              "+ " + _blueScoredLastRound.toString(),
-              style: TextStyle(
-                color: Colors.lightBlueAccent.withOpacity(0.4),
-                fontStyle: FontStyle.italic,
-                fontSize: 48.0,
+            child: Padding(
+              padding: EdgeInsets.all(4),
+              child: Text(
+                "+ " + _blueScoredLastRound.toString(),
+                style: TextStyle(
+                  color: Colors.lightBlueAccent.withOpacity(0.4),
+                  fontStyle: FontStyle.italic,
+                  fontSize: 48.0,
+                ),
               ),
             ),
           ),
         ),
         Expanded(
           child: Center(
-            child: Text(
-              "+ " + _redScoredLastRound.toString(),
-              style: TextStyle(
-                color: Colors.redAccent.withOpacity(0.4),
-                fontStyle: FontStyle.italic,
-                fontSize: 48.0,
+            child: Padding(
+              padding: EdgeInsets.all(4),
+              child: Text(
+                "+ " + _redScoredLastRound.toString(),
+                style: TextStyle(
+                  color: Colors.redAccent.withOpacity(0.4),
+                  fontStyle: FontStyle.italic,
+                  fontSize: 48.0,
+                ),
               ),
             ),
           ),
@@ -732,5 +749,81 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
     );
+  }
+
+  Widget _buildVictoryScreen() {
+    String victoryText;
+    Color victoryTextColor;
+
+    if (_blueWon) {
+      victoryText = "Blue Wins!";
+      victoryTextColor = Colors.blue;
+    } else if (_redWon) {
+      victoryText = "Red Wins!";
+      victoryTextColor = Colors.red;
+    }
+
+    if (_blueWon || _redWon) {
+      Widget victoryCard = Row(
+        children: <Widget>[
+          Expanded(
+            child: Center(
+              child: Card(
+                child: Padding(
+                  padding: EdgeInsets.all(8),
+                  child: Text(
+                    victoryText,
+                    style: TextStyle(
+                      color: victoryTextColor,
+                      fontSize: 64.0,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+
+      return Center(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Expanded(
+              child: Center(
+                child: Column(
+                  children: <Widget>[
+                    Expanded(
+                      child: RotatedBox(
+                        quarterTurns: 1,
+                        child: victoryCard,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Expanded(
+              child: Container(),
+            ),
+            Expanded(
+              child: Center(
+                child: Column(
+                  children: <Widget>[
+                    Expanded(
+                      child: RotatedBox(
+                        quarterTurns: -1,
+                        child: victoryCard,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    return Container();
   }
 }
