@@ -37,6 +37,7 @@ class _MyHomePageState extends State<MyHomePage> {
     Icons.content_cut,
   ];
   final math.Random _randomGen = math.Random();
+  final int _gridLength = 6;
 
   // keep track of what piece (if any) is placed on which tile in terms of
   //  which piece is placed on which tile
@@ -45,7 +46,9 @@ class _MyHomePageState extends State<MyHomePage> {
   // keep track of scores and who's turn it is currently
   int _turnNumber;
   int _blueScore;
+  int _blueScoredLastRound;
   int _redScore;
+  int _redScoredLastRound;
   final int maxScore = 2000;
 
   // variables related to which blue piece is coming up next and the
@@ -75,7 +78,8 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget _buildCard(int iconNumber, bool isBlue) {
     List<Color> cardColors;
     List<double> cardStops;
-    double cardAngle;
+    int cardIconTurns;
+    int cardScore;
 
     if (isBlue) {
       cardColors = [
@@ -85,7 +89,8 @@ class _MyHomePageState extends State<MyHomePage> {
         Colors.blueAccent[100],
       ];
       cardStops = [0, _blueScore / maxScore, _blueScore / maxScore, 1];
-      cardAngle = math.pi / 2;
+      cardIconTurns = 1;
+      cardScore = _blueScore;
     } else {
       cardColors = [
         Colors.redAccent[100],
@@ -94,7 +99,8 @@ class _MyHomePageState extends State<MyHomePage> {
         Colors.red[500],
       ];
       cardStops = [0, 1 - _redScore / maxScore, 1 - _redScore / maxScore, 1];
-      cardAngle = -math.pi / 2;
+      cardIconTurns = -1;
+      cardScore = _redScore;
     }
 
     return Card(
@@ -108,15 +114,17 @@ class _MyHomePageState extends State<MyHomePage> {
             colors: cardColors,
           ),
         ),
-        child: Padding(
-          padding: EdgeInsets.all(8.0),
-          child: Container(
-            child: Transform.rotate(
-              angle: cardAngle,
-              child: Icon(
-                _pieceIcons[iconNumber],
-                color: Colors.white,
-                size: 64.0,
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Center(
+              child: RotatedBox(
+                quarterTurns: cardIconTurns,
+                child: Icon(
+                  _pieceIcons[iconNumber],
+                  color: Colors.white,
+                  size: 64.0,
+                ),
               ),
             ),
           ),
@@ -156,10 +164,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   List<List<GridButtonItem>> _buildGrid() {
     List<List<GridButtonItem>> grid = [];
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < _gridLength; i++) {
       List<GridButtonItem> gridRow = [];
-      for (int j = 0; j < 6; j++) {
-        int index = i * 6 + j;
+      for (int j = 0; j < _gridLength; j++) {
+        int index = i * _gridLength + j;
         gridRow.add(GridButtonItem(
           value: index,
           child: Center(
@@ -261,11 +269,127 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _updateScore(bool isBlue) {
-    if (isBlue) {
-      _blueScore += 400;
-    } else {
-      _redScore += 400;
+    // a 2D boolean array where each entry is true only if isBlue is true
+    List<List<bool>> scoringArray = _convertPiecesTo2DArray(isBlue);
+
+    // keep track of the length of chains of pieces, where the index # is the
+    //  length of the chain
+    List<int> chainCount = [0, 0, 0, 0, 0, 0, 0];
+
+    // first, count horizontal and vertical chains
+    for (int i = 0; i < _gridLength; i++) {
+      int currentHorizontalChainLength = 0;
+      int currentVerticalChainLength = 0;
+      for (int j = 0; j < _gridLength; j++) {
+        // is our horizontal chain continuing?
+        if (scoringArray[i][j]) {
+          // if yes, add onto the length of the chain
+          currentHorizontalChainLength++;
+        } else {
+          // if no, reset the chain and note that we counted it
+          chainCount[currentHorizontalChainLength]++;
+          currentHorizontalChainLength = 0;
+        }
+        // is our vertical chain continuing?
+        if (scoringArray[j][i]) {
+          // if yes, add onto the length of the chain
+          currentVerticalChainLength++;
+        } else {
+          // if no, reset the chain and note that we counted it
+          chainCount[currentVerticalChainLength]++;
+          currentVerticalChainLength = 0;
+        }
+      }
+      // count the length of the chains we ended out on before resetting and
+      //  moving on to the next row/column
+      chainCount[currentHorizontalChainLength]++;
+      chainCount[currentVerticalChainLength]++;
     }
+
+    // create a second scoring array to track the second diagonal
+    List<List<bool>> scoringArray2 = _convertPiecesTo2DArray(isBlue);
+
+    // setup the diagonals to get counted by shifting the rows over such that
+    //  the diagonals are just the values in each column. probably less
+    //  efficient than computing looping weirdly over the array, but this is
+    //  easier to implement without running into issues
+    for (int i = 0; i < _gridLength; i++) {
+      for (int j = 0; j < _gridLength - 1 - i; j++) {
+        scoringArray[i].insert(0, false);
+        scoringArray2[i].add(false);
+      }
+      for (int j = i; j > 0; j--) {
+        scoringArray[i].add(false);
+        scoringArray2[i].insert(0, false);
+      }
+    }
+
+    // now count the diagonal chains by counting the horizontals of the shifted
+    //  diagonal arrays
+    // first, count horizontal and vertical chains
+    for (int i = 0; i < _gridLength * 2 - 1; i++) {
+      int currentTopLeftChainLength = 0;
+      int currentTopRightChainLength = 0;
+      for (int j = 0; j < _gridLength; j++) {
+        // is our top-left to bottom-right chain continuing?
+        if (scoringArray[j][i]) {
+          // if yes, add onto the length of the chain
+          currentTopLeftChainLength++;
+        } else {
+          // if no, reset the chain and note that we counted it
+          chainCount[currentTopLeftChainLength]++;
+          currentTopLeftChainLength = 0;
+        }
+        // is our top-right to bottom-left chain continuing?
+        if (scoringArray2[j][i]) {
+          // if yes, add onto the length of the chain
+          currentTopRightChainLength++;
+        } else {
+          // if no, reset the chain and note that we counted it
+          chainCount[currentTopRightChainLength]++;
+          currentTopRightChainLength = 0;
+        }
+      }
+      // count the length of the chains we ended out on before resetting and
+      //  moving on to the next row/column
+      chainCount[currentTopLeftChainLength]++;
+      chainCount[currentTopRightChainLength]++;
+    }
+
+    // now that we calculated the total number of longest chains on the board
+    //  for one players, gives them points based on the number and length
+    //  of the chains. points go as follows: 5 for 2 chains, 20 for 3 chains,
+    //  80 for 4 chains, 240 for 5 chains, and 960 for 6 chains.
+    int totalPointsEarned = chainCount[2] * 5;
+    totalPointsEarned += chainCount[3] * 20;
+    totalPointsEarned += chainCount[4] * 80;
+    totalPointsEarned += chainCount[5] * 240;
+    totalPointsEarned += chainCount[6] * 960;
+
+    if (isBlue) {
+      _blueScore += totalPointsEarned;
+      _blueScoredLastRound = totalPointsEarned;
+    } else {
+      _redScore += totalPointsEarned;
+      _redScoredLastRound = totalPointsEarned;
+    }
+  }
+
+  List<List<bool>> _convertPiecesTo2DArray(bool isBlue) {
+    List<List<bool>> returnArray = [];
+
+    for (int i = 0; i < _gridLength; i++) {
+      List<bool> currentColumn = [];
+      for (int j = 0; j < _gridLength; j++) {
+        if (isBlue) {
+          currentColumn.add(_buttonStates[i * _gridLength + j] > 0);
+        } else {
+          currentColumn.add(_buttonStates[i * _gridLength + j] < 0);
+        }
+      }
+      returnArray.add(currentColumn);
+    }
+    return returnArray;
   }
 
   void _displayHelp() {
@@ -280,7 +404,7 @@ class _MyHomePageState extends State<MyHomePage> {
               Text(
                 "Welcome to Roshambomok, a game where Tic-Tak-Toe meets " +
                     "five-in-a-row.\n\nPlayers take turn placing pieces " +
-                    "on empty spots on the board, gaining points each turn" +
+                    "on empty spots on the board, gaining points each time " +
                     "based on how long lines of their pieces are.\n",
                 textAlign: TextAlign.center,
               ),
@@ -389,15 +513,13 @@ class _MyHomePageState extends State<MyHomePage> {
     // reset scores
     _turnNumber = 0;
     _blueScore = 0;
-    _redScore = 0;
-
-    // TEMPORARY FOR CHECKING WORKING GRADIENTS
-    _blueScore = 200;
-    _redScore = 0;
+    _blueScoredLastRound = 0;
+    _redScore = 100;
+    _redScoredLastRound = 0;
 
     // clear the board
     _buttonStates = new List<int>(36);
-    for (int i = 0; i < 36; i++) {
+    for (int i = 0; i < _gridLength * _gridLength; i++) {
       _buttonStates[i] = 0;
     }
 
@@ -436,47 +558,20 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget _buildBackground() {
     return Center(
       child: Transform.rotate(
-        angle: -math.pi / 12,
+        angle: -math.pi / 16,
         child: AnimatedRotation(
+          duration: Duration(
+            milliseconds: 400,
+          ),
           angle: _arrowRotationAngle,
           child: Container(
             child: Icon(
-              Icons.arrow_upward,
+              Icons.navigation,
               size: 256,
-              color: Colors.grey,
+              color: Colors.grey[300],
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildScoreText() {
-    return Center(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Expanded(
-            child: Center(
-              child: Transform.rotate(
-                angle: math.pi / 2,
-                child: Text(
-                  _blueScore.toString(),
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            child: Center(
-              child: Transform.rotate(
-                angle: -math.pi / 2,
-                child: Text(
-                  _redScore.toString(),
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -508,6 +603,7 @@ class _MyHomePageState extends State<MyHomePage> {
               Expanded(
                 flex: 3,
                 child: FloatingActionButton(
+                  backgroundColor: Colors.deepPurpleAccent,
                   onPressed: () => _displayReset(),
                   child: Icon(
                     Icons.refresh,
@@ -536,6 +632,7 @@ class _MyHomePageState extends State<MyHomePage> {
               Expanded(
                 flex: 3,
                 child: FloatingActionButton(
+                  backgroundColor: Colors.deepPurpleAccent,
                   onPressed: () => _displayHelp(),
                   child: Icon(
                     Icons.help,
@@ -564,6 +661,76 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildScoreText() {
+    Widget previousScoresText = Row(
+      children: <Widget>[
+        Expanded(
+          child: Center(
+            child: Text(
+              "+ " + _blueScoredLastRound.toString(),
+              style: TextStyle(
+                color: Colors.lightBlueAccent.withOpacity(0.4),
+                fontStyle: FontStyle.italic,
+                fontSize: 48.0,
+              ),
+            ),
+          ),
+        ),
+        Expanded(
+          child: Center(
+            child: Text(
+              "+ " + _redScoredLastRound.toString(),
+              style: TextStyle(
+                color: Colors.redAccent.withOpacity(0.4),
+                fontStyle: FontStyle.italic,
+                fontSize: 48.0,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+
+    return Center(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Expanded(
+            child: Center(
+              child: Column(
+                children: <Widget>[
+                  Expanded(
+                    child: RotatedBox(
+                      quarterTurns: 1,
+                      child: previousScoresText,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            child: Container(),
+          ),
+          Expanded(
+            child: Center(
+              child: Column(
+                children: <Widget>[
+                  Expanded(
+                    child: RotatedBox(
+                      quarterTurns: -1,
+                      child: previousScoresText,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
