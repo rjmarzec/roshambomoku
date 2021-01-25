@@ -122,21 +122,39 @@ class _MyHomePageState extends State<MyHomePage> {
 
     if (isBlue) {
       cardColors = [
-        Colors.blue[500],
-        Colors.blue[500],
+        Colors.blue,
+        Colors.blue,
+        Colors.blueAccent[700],
+        Colors.blueAccent[700],
         Colors.blueAccent[100],
         Colors.blueAccent[100],
       ];
-      cardStops = [0, _blueScore / maxScore, _blueScore / maxScore, 1];
+      cardStops = [
+        0,
+        (_blueScore - _blueScoredLastRound) / maxScore,
+        (_blueScore - _blueScoredLastRound) / maxScore,
+        _blueScore / maxScore,
+        _blueScore / maxScore,
+        1
+      ];
       cardIconTurns = 1;
     } else {
       cardColors = [
-        Colors.redAccent[100],
-        Colors.redAccent[100],
-        Colors.red[500],
-        Colors.red[500],
+        Colors.red[200],
+        Colors.red[200],
+        Colors.redAccent[700],
+        Colors.redAccent[700],
+        Colors.red,
+        Colors.red,
       ];
-      cardStops = [0, 1 - _redScore / maxScore, 1 - _redScore / maxScore, 1];
+      cardStops = [
+        0,
+        1 - _redScore / maxScore,
+        1 - _redScore / maxScore,
+        1 - (_redScore - _redScoredLastRound) / maxScore,
+        1 - (_redScore - _redScoredLastRound) / maxScore,
+        1
+      ];
       cardIconTurns = -1;
     }
 
@@ -146,8 +164,8 @@ class _MyHomePageState extends State<MyHomePage> {
           borderRadius: BorderRadius.circular(4),
           gradient: LinearGradient(
             stops: cardStops,
-            begin: FractionalOffset.bottomLeft,
-            end: FractionalOffset.topRight,
+            begin: FractionalOffset.centerLeft,
+            end: FractionalOffset.centerRight,
             colors: cardColors,
           ),
         ),
@@ -170,7 +188,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  RotatedBox _buildGridIcon(int iconNumber) {
+  Widget _buildGridIcon(int iconNumber) {
     int iconRotationTurns;
     Color iconColor;
     IconData iconImage;
@@ -205,6 +223,7 @@ class _MyHomePageState extends State<MyHomePage> {
       List<GridButtonItem> gridRow = [];
       for (int j = 0; j < _gridLength; j++) {
         int index = i * _gridLength + j;
+
         gridRow.add(GridButtonItem(
           value: index,
           child: Center(
@@ -555,13 +574,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setEnabledSystemUIOverlays([]);
+    //SystemChrome.setEnabledSystemUIOverlays([]);
     return Scaffold(
       body: SafeArea(
         child: Stack(
           children: <Widget>[
             _buildBackground(),
-            _buildScoreText(),
             _buildPlayArea(),
             _buildVictoryScreen(),
           ],
@@ -635,6 +653,9 @@ class _MyHomePageState extends State<MyHomePage> {
               });
             },
             items: _buildGrid(),
+            borderWidth: 4.0,
+            borderColor: Colors.black12,
+            hideSurroundingBorder: true,
           ),
         ),
         Expanded(
@@ -670,82 +691,6 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildScoreText() {
-    Widget previousScoresText = Row(
-      children: <Widget>[
-        Expanded(
-          child: Center(
-            child: Padding(
-              padding: EdgeInsets.all(4),
-              child: Text(
-                "+ " + _blueScoredLastRound.toString(),
-                style: TextStyle(
-                  color: Colors.lightBlueAccent.withOpacity(0.4),
-                  fontStyle: FontStyle.italic,
-                  fontSize: 48.0,
-                ),
-              ),
-            ),
-          ),
-        ),
-        Expanded(
-          child: Center(
-            child: Padding(
-              padding: EdgeInsets.all(4),
-              child: Text(
-                "+ " + _redScoredLastRound.toString(),
-                style: TextStyle(
-                  color: Colors.redAccent.withOpacity(0.4),
-                  fontStyle: FontStyle.italic,
-                  fontSize: 48.0,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-
-    return Center(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Expanded(
-            child: Center(
-              child: Column(
-                children: <Widget>[
-                  Expanded(
-                    child: RotatedBox(
-                      quarterTurns: 1,
-                      child: previousScoresText,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Expanded(
-            child: Container(),
-          ),
-          Expanded(
-            child: Center(
-              child: Column(
-                children: <Widget>[
-                  Expanded(
-                    child: RotatedBox(
-                      quarterTurns: -1,
-                      child: previousScoresText,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
