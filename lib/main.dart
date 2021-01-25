@@ -65,6 +65,8 @@ class _MyHomePageState extends State<MyHomePage> {
       GlobalKey<FlipCardState>();
   Widget _frontBluePieceCard;
   Widget _backBluePieceCard;
+  List<int> _bluePieceBucket;
+  int _blueBucketIndex;
   int _nextBluePiece;
 
   // variables related to which red piece is coming up next and the
@@ -73,6 +75,8 @@ class _MyHomePageState extends State<MyHomePage> {
       GlobalKey<FlipCardState>();
   Widget _frontRedPieceCard;
   Widget _backRedPieceCard;
+  List<int> _redPieceBucket;
+  int _redBucketIndex;
   int _nextRedPiece;
 
   // keep track of the angle the arrow in the background should point
@@ -98,6 +102,14 @@ class _MyHomePageState extends State<MyHomePage> {
     for (int i = 0; i < _gridLength * _gridLength; i++) {
       _buttonStates[i] = 0;
     }
+
+    // initialize the piece buckets
+    _bluePieceBucket = [1, 1, 1, 2, 2, 2, 3, 3, 3];
+    _redPieceBucket = [1, 1, 1, 2, 2, 2, 3, 3, 3];
+    _blueBucketIndex = 0;
+    _redBucketIndex = 0;
+    _bluePieceBucket.shuffle(_randomGen);
+    _redPieceBucket.shuffle(_randomGen);
 
     // pick a random piece for red and blue to start off with
     _generateNextPiece(true);
@@ -318,9 +330,25 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _generateNextPiece(bool isBlue) {
     if (isBlue) {
-      _nextBluePiece = _randomGen.nextInt(3) + 1;
+      _nextBluePiece = _bluePieceBucket[_blueBucketIndex];
+      _blueBucketIndex++;
+      if (_blueBucketIndex >= 3) {
+        _bluePieceBucket[0] = 1;
+        _bluePieceBucket[1] = 2;
+        _bluePieceBucket[2] = 3;
+        _blueBucketIndex = 0;
+        _bluePieceBucket.shuffle(_randomGen);
+      }
     } else {
-      _nextRedPiece = _randomGen.nextInt(3) + 1;
+      _nextRedPiece = _redPieceBucket[_redBucketIndex];
+      _redBucketIndex++;
+      if (_redBucketIndex >= 3) {
+        _redPieceBucket[0] = 1;
+        _redPieceBucket[1] = 2;
+        _redPieceBucket[2] = 3;
+        _redBucketIndex = 0;
+        _redPieceBucket.shuffle(_randomGen);
+      }
     }
   }
 
@@ -653,8 +681,8 @@ class _MyHomePageState extends State<MyHomePage> {
               });
             },
             items: _buildGrid(),
-            borderWidth: 4.0,
-            borderColor: Colors.black12,
+            borderWidth: 2.0,
+            borderColor: Colors.grey[700],
             hideSurroundingBorder: true,
           ),
         ),
