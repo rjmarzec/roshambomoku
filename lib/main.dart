@@ -104,8 +104,8 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     // initialize the piece buckets
-    _bluePieceBucket = [1, 1, 1, 2, 2, 2, 3, 3, 3];
-    _redPieceBucket = [1, 1, 1, 2, 2, 2, 3, 3, 3];
+    _bluePieceBucket = [1, 1, 2, 2, 3, 3];
+    _redPieceBucket = [1, 1, 2, 2, 3, 3];
     _blueBucketIndex = 0;
     _redBucketIndex = 0;
     _bluePieceBucket.shuffle(_randomGen);
