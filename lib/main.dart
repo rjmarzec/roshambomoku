@@ -492,10 +492,11 @@ class _MyHomePageState extends State<MyHomePage> {
           child: ListBody(
             children: <Widget>[
               Text(
-                "Welcome to Roshambomoku, a game where Tic-Tak-Toe meets " +
-                    "five-in-a-row.\n\nPlayers take turn placing pieces " +
-                    "on empty spots on the board, gaining points each time " +
-                    "based on how long lines of their pieces are.\n",
+                "Welcome to Roshambomoku, a game where rock-paper-scissors " +
+                    "meets five-in-a-row.\n\nPlayers take turn placing " +
+                    "pieces on empty spots on the board, gaining points each " +
+                    "after placing based on number and length of lines of " +
+                    "pieces they have on the borad.\n",
                 textAlign: TextAlign.center,
               ),
               Center(
@@ -544,10 +545,12 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               Text(
                 "\nHowever, if your piece beats their's in rock-paper-" +
-                    "scissors, you can replace their piece as well.\n\nCan " +
-                    "you outsmart your opponent to reach " +
+                    "scissors, you can replace their piece instead of going " +
+                    "on an empty space.\n\nCan you outsmart your opponent to " +
+                    "reach " +
                     maxScore.toString() +
-                    " points first?\n\nGood luck!",
+                    " points first?" +
+                    "\n\nGood luck!",
                 textAlign: TextAlign.center,
               ),
             ],
