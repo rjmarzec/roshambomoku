@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_grid_button/flutter_grid_button.dart';
 import 'package:flip_card/flip_card.dart';
 import 'package:animated_rotation/animated_rotation.dart';
-import 'package:flutter/services.dart';
 import 'dart:math' as math;
 
 void main() => runApp(MyApp());
@@ -38,6 +37,11 @@ class _MyHomePageState extends State<MyHomePage> {
     Icons.description,
     Icons.content_cut,
   ];
+
+  // a list containing the points that should be earned each line of x length,
+  //  where x is the index of the pointValues list, stored here so that it can
+  //  be modified nicely
+  final List<int> _pointValues = [0, 0, 80, 250, 650, 2000, 2000];
 
   // random generator for picking the next piece each player gets
   final math.Random _randomGen = math.Random();
@@ -93,7 +97,7 @@ class _MyHomePageState extends State<MyHomePage> {
     _blueScore = 0;
     _blueWon = false;
     _blueScoredLastRound = 0;
-    _redScore = 150;
+    _redScore = 200;
     _redWon = false;
     _redScoredLastRound = 0;
 
@@ -444,11 +448,11 @@ class _MyHomePageState extends State<MyHomePage> {
     //  for one players, gives them points based on the number and length
     //  of the chains. points go as follows: 5 for 2 chains, 20 for 3 chains,
     //  80 for 4 chains, 240 for 5 chains, and 960 for 6 chains.
-    int totalPointsEarned = chainCount[2] * 10;
-    totalPointsEarned += chainCount[3] * 40;
-    totalPointsEarned += chainCount[4] * 160;
-    totalPointsEarned += chainCount[5] * 480;
-    totalPointsEarned += chainCount[6] * 1920;
+    int totalPointsEarned = chainCount[2] * _pointValues[2];
+    totalPointsEarned += chainCount[3] * _pointValues[3];
+    totalPointsEarned += chainCount[4] * _pointValues[4];
+    totalPointsEarned += chainCount[5] * _pointValues[5];
+    totalPointsEarned += chainCount[6] * _pointValues[6];
 
     if (isBlue) {
       _blueScore += totalPointsEarned;
