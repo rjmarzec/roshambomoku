@@ -42,7 +42,7 @@ class _MyHomePageState extends State<MyHomePage> {
   // a list containing the points that should be earned each line of x length,
   //  where x is the index of the pointValues list, stored here so that it can
   //  be modified nicely
-  final List<int> _pointValues = [0, 0, 80, 250, 650, 2000, 2000];
+  final List<int> _pointValues = [0, 0, 60, 200, 500, 1200, 2000];
 
   // random generator for picking the next piece each player gets
   final math.Random _randomGen = math.Random();
@@ -500,8 +500,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 "Welcome to Roshambomoku, a game where rock-paper-scissors " +
                     "meets five-in-a-row.\n\nPlayers take turns placing " +
                     "pieces on empty spots on the board, gaining points each " +
-                    "after placing based on number and length of lines of " +
-                    "pieces they have on the board.\n",
+                    "turn based on the number and length of the lines of " +
+                    "their pieces.\n",
                 textAlign: TextAlign.center,
               ),
               Center(
@@ -550,12 +550,24 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               Text(
                 "\nHowever, if your piece beats their piece in rock-paper-" +
-                    "scissors, you can replace their piece instead of going " +
-                    "on an empty space.\n\nCan you outsmart your opponent to " +
+                    "scissors, you can replace an opposite-colored piece " +
+                    "instead of going on an empty space.\n\nLines are scored " +
+                    "by their length as follows:\n" +
+                    "\n2 - " +
+                    _pointValues[2].toString() +
+                    "\n3 - " +
+                    _pointValues[3].toString() +
+                    "\n4 - " +
+                    _pointValues[4].toString() +
+                    "\n5 - " +
+                    _pointValues[5].toString() +
+                    "\n6 - " +
+                    _pointValues[6].toString() +
+                    "\n\nCan you outsmart your opponent to " +
                     "reach " +
                     maxScore.toString() +
                     " points first?" +
-                    "\n\nGood luck!",
+                    "\n\nHave fun, and good luck!",
                 textAlign: TextAlign.center,
               ),
             ],
