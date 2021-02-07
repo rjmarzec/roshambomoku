@@ -551,23 +551,27 @@ class _MyHomePageState extends State<MyHomePage> {
               Text(
                 "\nHowever, if your piece beats their piece in rock-paper-" +
                     "scissors, you can replace an opposite-colored piece " +
-                    "instead of going on an empty space.\n\nLines are scored " +
-                    "by their length as follows:\n" +
+                    "instead of going on an empty space.\n\nRed starts out " +
+                    "with an extra " +
+                    200.toString() +
+                    " points to make up for going second, and lines are " +
+                    "scored by their length as follows:\n" +
                     "\n2 - " +
                     _pointValues[2].toString() +
-                    "\n3 - " +
+                    "  |  3 - " +
                     _pointValues[3].toString() +
                     "\n4 - " +
                     _pointValues[4].toString() +
-                    "\n5 - " +
+                    "  |  5 - " +
                     _pointValues[5].toString() +
                     "\n6 - " +
                     _pointValues[6].toString() +
-                    "\n\nCan you outsmart your opponent to " +
+                    "!\n\nCan you outsmart your opponent to " +
                     "reach " +
                     maxScore.toString() +
-                    " points first?" +
-                    "\n\nHave fun, and good luck!",
+                    " points first? To get started, grab a friend, sit " +
+                    "across from each other, and tap on the tiles to place " +
+                    "pieces.\n\nHave fun, and good luck!",
                 textAlign: TextAlign.center,
               ),
             ],
