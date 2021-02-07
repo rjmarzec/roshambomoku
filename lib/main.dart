@@ -497,8 +497,8 @@ class _MyHomePageState extends State<MyHomePage> {
           child: ListBody(
             children: <Widget>[
               Text(
-                "Welcome to Roshambomoku, a game where rock-paper-scissors " +
-                    "meets five-in-a-row.\n\nPlayers take turns placing " +
+                "Welcome to Roshambomoku, a game where Rock-paper-scissors " +
+                    "meets Five-in-a-row.\n\nPlayers take turns placing " +
                     "pieces on empty spots on the board, gaining points each " +
                     "turn based on the number and length of the lines of " +
                     "their pieces.\n",
@@ -549,7 +549,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
               Text(
-                "\nHowever, if your piece beats their piece in rock-paper-" +
+                "\nHowever, if your piece beats their piece in Rock-paper-" +
                     "scissors, you can replace an opposite-colored piece " +
                     "instead of going on an empty space.\n\nRed starts out " +
                     "with an extra " +
